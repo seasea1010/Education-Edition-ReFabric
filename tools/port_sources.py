@@ -138,15 +138,25 @@ for p in src.rglob("*.java"):
     text=text.replace("import javax.annotation.Nullable;","")
     text=text.replace("@Nullable ","")
     for obj in ["_ent","itemstack","this.boundItem","this.boundEntity","this.boundBlockEntity"]:
-        text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, null)","ForgeCompat.getItemHandler("+obj+")")
-        text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, (Direction)null)","ForgeCompat.getItemHandler("+obj+")")
+        text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, null)","net.mcreator.educationeditionreforged.compat.ForgeCompat.getItemHandler("+obj+")")
+        text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, (Direction)null)","net.mcreator.educationeditionreforged.compat.ForgeCompat.getItemHandler("+obj+")")
     text=text.replace("Map _slots", "Map<Integer, Slot> _slots")
-    text=text.replace("Supplier _current", "Supplier<Map<Integer, Slot>> _current")
+    text=text.replace("Supplier _current", "Supplier<?> _current")
+    text=text.replace("instanceof final Supplier<Map<Integer, Slot>> _current", "instanceof Supplier<?> _current")
     text=text.replace('guistate.get("text:Weight").getValue()', '((EditBox)guistate.get("text:Weight")).getValue()')
     text=text.replace("ItemTags.create(new ResourceLocation(", "TagKey.create(Registries.ITEM, new ResourceLocation(")
     if "TagKey.create(Registries.ITEM" in text:
         text=text.replace("import net.minecraft.tags.ItemTags;", "import net.minecraft.tags.TagKey;\nimport net.minecraft.core.registries.Registries;")
     text=text.replace("CreativeModeTab.builder()", "CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0)")
+    text=text.replace(".withSearchBar()", "")
+    text=text.replace("addRenderableWidget((GuiEventListener)", "addRenderableWidget(")
+    text=text.replace("addWidget((GuiEventListener)", "addWidget(")
+    text=text.replace("NonNullList.withSize(10, (Object)ItemStack.EMPTY)", "NonNullList.withSize(10, ItemStack.EMPTY)")
+    text=text.replace("NonNullList.withSize(this.getContainerSize(), (Object)ItemStack.EMPTY)", "NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY)")
+    text=text.replace("return (LazyOptional<T>)super.getCapability((Capability)capability, facing);", "return LazyOptional.empty();")
+    text=text.replace("super.onDestroyedByPlayer(blockstate, world, pos, entity, willHarvest, fluid)", "world.removeBlock(pos, false)")
+    text=text.replace("() -> new BlockItem((Block)block.get(), new Item.Properties())", "() -> (Item)new BlockItem((Block)block.get(), new Item.Properties())")
+    text=text.replace("EducationEditionReforgedMod.PACKET_HANDLER.sendToServer((Object)", "EducationEditionReforgedMod.PACKET_HANDLER.sendToServer(")
     text=re.sub(r"public <T> LazyOptional<T> getCapability\(Capability<T> capability, @Nullable Direction facing\) \{.*?\n    \}","public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) { return LazyOptional.empty(); }",text,flags=re.S)
     if "ForgeCompat.getItemHandler" in text:
         text=re.sub(r"^(package [^;]+;\n)", r"\1import net.mcreator.educationeditionreforged.compat.ForgeCompat;\n", text, count=1)
@@ -198,6 +208,9 @@ public class {0} {{
 }}
 """.format(rel.stem, "\n".join(checks), "\n".join(consume), output)
 
+    if "/client/gui/" in str(rel) and rel.name.endswith("Screen.java"):
+        menu_name=rel.stem[:-6] if rel.stem.endswith("Screen") else rel.stem
+        text=text.replace("super((AbstractContainerMenu)container,", "super(("+menu_name+")container,")
     target=out/rel
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(text)
