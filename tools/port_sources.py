@@ -142,6 +142,7 @@ for p in src.rglob("*.java"):
         text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, (Direction)null)","net.mcreator.educationeditionreforged.compat.ForgeCompat.getItemHandler("+obj+")")
     text=text.replace("Map _slots", "Map<Integer, Slot> _slots")
     text=text.replace("Supplier _current", "Supplier<?> _current")
+    text=text.replace("final Map value = _current.get();", "final Map value = (Map)_current.get();")
     text=text.replace("instanceof final Supplier<Map<Integer, Slot>> _current", "instanceof Supplier<?> _current")
     text=text.replace('guistate.get("text:Weight").getValue()', '((EditBox)guistate.get("text:Weight")).getValue()')
     text=text.replace("ItemTags.create(new ResourceLocation(", "TagKey.create(Registries.ITEM, new ResourceLocation(")
