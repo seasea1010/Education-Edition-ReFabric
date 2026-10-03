@@ -110,6 +110,11 @@ jobs:
             src/main/java \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar
 
+      - name: Inspect generated item registry
+        run: |
+          sed -n '35,65p' src/main/java/net/mcreator/educationeditionreforged/init/EducationEditionReforgedModItems.java
+          tail -20 src/main/java/net/mcreator/educationeditionreforged/init/EducationEditionReforgedModItems.java
+
       - name: Build Fabric project
         run: gradle build
 
