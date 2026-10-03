@@ -214,9 +214,7 @@ public class {0} {{
         menu_name=(rel.stem[:-6] if rel.stem.endswith("Screen") else rel.stem)+"Menu"
         text=text.replace("super((AbstractContainerMenu)container,", "super(("+menu_name+")container,")
     if rel.name == "EducationEditionReforgedModItems.java":
-        start=text.find("    private static RegistryObject<Item> block(")
-        if start >= 0:
-            text=text[:start] + "    private static RegistryObject<Item> block(RegistryObject<Block> block) {\n        return REGISTRY.register(block.getId().getPath(), () -> (Item)new BlockItem((Block)block.get(), new Item.Properties()));\n    }\n}\n"
+        text=re.sub(r"    private static RegistryObject<Item> block\\(RegistryObject<Block> block\\) \\{.*?    \\}", "    private static RegistryObject<Item> block(RegistryObject<Block> block) {\\n        return REGISTRY.register(block.getId().getPath(), () -> (Item)new BlockItem((Block)block.get(), new Item.Properties()));\\n    }", text, count=1, flags=re.S)
     target=out/rel
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(text)
