@@ -31,30 +31,34 @@ jobs:
           curl -L --fail -o tools/cfr.jar \
             https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
 
-      - name: Download Fabric mappings and remapper
+      - name: Download Mojang mappings and remapper
         run: |
-          curl -L --fail -o tools/yarn.jar \
-            https://maven.fabricmc.net/net/fabricmc/yarn/1.20.1%2Bbuild.10/yarn-1.20.1%2Bbuild.10-v2.jar
-          curl -L --fail -o tools/tiny-remapper.jar \
-            https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
-          curl -L --fail -o tools/mapping-io.jar \
-            https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
-          curl -L --fail -o tools/intermediary.jar \
-            https://maven.fabricmc.net/net/fabricmc/intermediary/1.20.1/intermediary-1.20.1-v2.jar
-          unzip -p tools/intermediary.jar mappings/mappings.tiny > tools/official-intermediary.tiny
-          unzip -p tools/yarn.jar mappings/mappings.tiny > tools/intermediary-named.tiny
+          curl -L --fail -o tools/version.json https://piston-meta.mojang.com/mc/game/version_manifest_v2.json
+          SERVER_MAP=$(python3 -c "import json; d=json.load(open('tools/version.json')); v=next(x for x in d['versions'] if x['id']=='1.20.1'); print(v['url'])")
+          curl -L --fail -o tools/1.20.1.json "$SERVER_MAP"
+          python3 -c "import json; d=json.load(open('tools/1.20.1.json')); print(d['downloads']['server_mappings']['url'])" > tools/server_url.txt
+          python3 -c "import json; d=json.load(open('tools/1.20.1.json')); print(d['downloads']['client_mappings']['url'])" > tools/client_url.txt
+          curl -L --fail -o tools/server.txt "$(cat tools/server_url.txt)"
+          curl -L --fail -o tools/client.txt "$(cat tools/client_url.txt)"
+          curl -L --fail -o tools/tiny-remapper.jar https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
+          curl -L --fail -o tools/mapping-io.jar https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
           cat > tools/Remap.java <<'EOF'
           import net.fabricmc.tinyremapper.*;
           import net.fabricmc.mappingio.MappingReader;
+          import net.fabricmc.mappingio.MappingFormat;
           import net.fabricmc.mappingio.tree.MemoryMappingTree;
           import java.nio.file.*;
           public class Remap {
             public static void main(String[] args) throws Exception {
-              Path input=Paths.get(args[0]), mappings=Paths.get(args[1]), output=Paths.get(args[2]);
+              Path input=Paths.get(args[0]), client=Paths.get(args[1]), server=Paths.get(args[2]), output=Paths.get(args[3]);
               MemoryMappingTree tree=new MemoryMappingTree();
-              MappingReader.read(mappings, tree);
+              MappingReader.read(client, MappingFormat.PROGUARD_FILE, tree);
+              MappingReader.read(server, MappingFormat.PROGUARD_FILE, tree);
+              System.out.println("Mapping namespaces: " + tree.getSrcNamespace() + " -> " + tree.getDstNamespaces());
+              String src=tree.getSrcNamespace();
+              String dst=tree.getDstNamespaces().get(0);
               TinyRemapper remapper=TinyRemapper.newRemapper()
-                .withMappings(TinyUtils.createMappingProvider(tree, "official", "named"))
+                .withMappings(TinyUtils.createMappingProvider(tree, src, dst))
                 .rebuildSourceFilenames(true).build();
               OutputConsumerPath consumer=new OutputConsumerPath.Builder(output).build();
               try {
@@ -69,16 +73,12 @@ jobs:
           EOF
           javac -cp tools/tiny-remapper.jar:tools/mapping-io.jar tools/Remap.java
 
-      - name: Remap Forge mod from official names to Yarn names
+      - name: Remap Forge mod to Mojang names
         run: |
           java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
-            tools/official-intermediary.tiny \
-            original-mod/education_edition_reforged-1.0.4-intermediary.jar
-          java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
-            original-mod/education_edition_reforged-1.0.4-intermediary.jar \
-            tools/intermediary-named.tiny \
-            original-mod/education_edition_reforged-1.0.4-named.jar
+            tools/client.txt tools/server.txt \
+            original-mod/education_edition_reforged-1.0.4-mojmap.jar
 
       - name: Decompile remapped mod
         run: |
