@@ -142,6 +142,54 @@ for p in src.rglob("*.java"):
     text=re.sub(r"public <T> LazyOptional<T> getCapability\(Capability<T> capability, @Nullable Direction facing\) \{.*?\n    \}","public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) { return LazyOptional.empty(); }",text,flags=re.S)
     if "ForgeCompat.getItemHandler" in text:
         text="import net.mcreator.educationeditionreforged.compat.ForgeCompat;\n"+text
+    # Rebuild MCreator Combine procedures from their recipe conditions.
+    if rel.name.startswith("Combine") and rel.name.endswith("Procedure.java"):
+        if rel.name == "CombineProcedure.java":
+            combine_files = sorted(src.rglob("Combine*Procedure.java"))
+            calls = []
+            for cp in combine_files:
+                if cp.name != "CombineProcedure.java":
+                    calls.append("        " + cp.stem + ".execute(entity);")
+            text = "package net.mcreator.educationeditionreforged.procedures;\nimport net.minecraft.world.entity.Entity;\npublic class CombineProcedure {\n    public static void execute(Entity entity) {\n        if (entity == null) return;\n" + "\n".join(calls) + "\n    }\n}\n"
+        else:
+            amounts = [(int(a), int(n)) for a,n in re.findall(r"getAmount\((\d+)\)\s*==\s*(\d+)", text)]
+            refs = []
+            for m in re.finditer(r"EducationEditionReforgedModBlocks\.([A-Z0-9_]+)\.get\(\)", text):
+                if m.group(1) not in refs:
+                    refs.append(m.group(1))
+            outm = re.search(r"EducationEditionReforgedModItems\.([A-Z0-9_]+)\.get\(\)", text)
+            if len(amounts) == len(refs) and outm:
+                checks = []
+                for slot, need in amounts:
+                    block = refs[len(checks)//2]
+                    checks.append("        Slot s{0} = slots.get({0}) instanceof Slot ? (Slot) slots.get({0}) : null;".format(slot))
+                    checks.append("        if (s{0} == null || s{0}.getItem().getItem() != EducationEditionReforgedModBlocks.{1}.get().asItem() || s{0}.getItem().getCount() < {2}) return;".format(slot, block, need))
+                consume = ["        slots.get({}).remove({});".format(slot, need) for slot, need in amounts]
+                output = outm.group(1)
+                text = """package net.mcreator.educationeditionreforged.procedures;
+import java.util.Map;
+import java.util.function.Supplier;
+import net.mcreator.educationeditionreforged.init.EducationEditionReforgedModBlocks;
+import net.mcreator.educationeditionreforged.init.EducationEditionReforgedModItems;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+public class {0} {{
+    public static void execute(Entity entity) {{
+        if (!(entity instanceof Player player)) return;
+        if (!(player.containerMenu instanceof Supplier<?> supplier)) return;
+        Object raw = supplier.get();
+        if (!(raw instanceof Map<?,?> rawSlots)) return;
+        @SuppressWarnings("unchecked") Map<Integer, Slot> slots = (Map<Integer, Slot>) rawSlots;
+{1}
+{2}
+        Slot outputSlot = slots.get(0);
+        if (outputSlot != null) outputSlot.set(new ItemStack(EducationEditionReforgedModItems.{3}.get(), 1));
+    }}
+}}
+""".format(rel.stem, "\n".join(checks), "\n".join(consume), output)
+
     target=out/rel
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(text)
