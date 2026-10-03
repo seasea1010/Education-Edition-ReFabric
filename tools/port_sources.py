@@ -105,9 +105,16 @@ forge_map = {
     "net.minecraftforge.api.distmarker.Dist":"Dist",
 }
 
+compat_backup = None
+compat_file = out / "net/mcreator/educationeditionreforged/compat/ForgeCompat.java"
+if compat_file.exists():
+    compat_backup = compat_file.read_text()
 if out.exists():
     shutil.rmtree(out)
 out.mkdir(parents=True)
+if compat_backup is not None:
+    compat_file.parent.mkdir(parents=True, exist_ok=True)
+    compat_file.write_text(compat_backup)
 left=set()
 count=0
 for p in src.rglob("*.java"):
