@@ -28,8 +28,8 @@ jobs:
           mkdir -p tools original-mod decompiled
           curl -L --fail -o original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
             https://cdn.modrinth.com/data/AgZRfe77/versions/yBO7DeLq/education_edition_reforged-1.0.4-forge-1.20.1.jar
-          curl -L --fail -o tools/cfr.jar \
-            https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
+          curl -L --fail -o tools/procyon.jar \
+            https://github.com/mstrobel/procyon/releases/download/v0.6.0/procyon-decompiler-0.6.0.jar
 
       - name: Download Mojang mappings and remapper
         run: |
@@ -96,8 +96,9 @@ jobs:
         run: |
           rm -rf decompiled
           mkdir -p decompiled
-          java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-mojmap.jar \
-            --outputdir decompiled --silent true --comments false
+          java -Xmx2G -jar tools/procyon.jar \
+            -jar original-mod/education_edition_reforged-1.0.4-mojmap.jar \
+            -o decompiled
 
       - name: Prepare Fabric source tree
         run: |
