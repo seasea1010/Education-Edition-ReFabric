@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "education_edition_reforged",
+  "version": "${version}",
+  "name": "Education Edition ReFabric",
+  "description": "Fabric port of Education Edition Reforged.",
+  "authors": ["seasea1010"],
+  "environment": "*",
+  "entrypoints": {"main": ["com.seasea1010.education_edition_refabric.EducationEditionReFabric"]},
+  "depends": {"fabricloader": ">=0.14.0", "minecraft": "~1.20.1", "java": ">=17", "fabric-api": "*"}
+}
