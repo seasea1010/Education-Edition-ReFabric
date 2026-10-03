@@ -59,7 +59,7 @@ jobs:
               String src=tree.getSrcNamespace();
               String dst=tree.getDstNamespaces().get(0);
               TinyRemapper remapper=TinyRemapper.newRemapper()
-                .withMappings(TinyUtils.createMappingProvider(tree, src, dst))
+                .withMappings(TinyUtils.createMappingProvider(tree, dst, src))
                 .rebuildSourceFilenames(true).build();
               OutputConsumerPath consumer=new OutputConsumerPath.Builder(output).build();
               try {
