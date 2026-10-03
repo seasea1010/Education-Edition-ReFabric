@@ -212,6 +212,10 @@ public class {0} {{
     if "/client/gui/" in str(rel) and rel.name.endswith("Screen.java"):
         menu_name=(rel.stem[:-6] if rel.stem.endswith("Screen") else rel.stem)+"Menu"
         text=text.replace("super((AbstractContainerMenu)container,", "super(("+menu_name+")container,")
+    if rel.name == "EducationEditionReforgedModItems.java":
+        start=text.find("    private static RegistryObject<Item> block(")
+        if start >= 0:
+            text=text[:start] + "    private static RegistryObject<Item> block(RegistryObject<Block> block) {\n        return REGISTRY.register(block.getId().getPath(), () -> (Item)new BlockItem((Block)block.get(), new Item.Properties()));\n    }\n}\n"
     target=out/rel
     target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(text)
