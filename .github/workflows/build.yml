@@ -99,6 +99,16 @@ jobs:
           java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-mojmap.jar \
             --outputdir decompiled --silent true --comments false
 
+      - name: Prepare Fabric source tree
+        run: |
+          python3 tools/port_sources.py \
+            decompiled \
+            tools/joined.tsrg \
+            tools/client.txt \
+            tools/server.txt \
+            src/main/java \
+            original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar
+
       - name: Build Fabric project
         run: gradle build
 
