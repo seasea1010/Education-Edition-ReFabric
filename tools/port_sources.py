@@ -107,7 +107,7 @@ for p in src.rglob("*.java"):
 with zipfile.ZipFile(original) as z:
     for info in z.infolist():
         name = info.filename
-        if not (name.startswith("assets/") or name.startswith("data/") or name == "pack.mcmeta"):
+        if info.is_dir() or not (name.startswith("assets/") or name.startswith("data/") or name == "pack.mcmeta"):
             continue
         target = out.parent / "resources" / name
         target.parent.mkdir(parents=True, exist_ok=True)
