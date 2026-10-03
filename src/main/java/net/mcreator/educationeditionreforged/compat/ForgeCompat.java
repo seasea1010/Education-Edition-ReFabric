@@ -127,8 +127,8 @@ public final class ForgeCompat {
     }
 
     public static class RegistryObject<T> implements Supplier<T> {
-        final T value; final String id; RegistryObject(String id,T value){this.id=id;this.value=value;}
-        public T get(){return value;} public String getId(){return id;}
+        final T value; final ResourceLocation id; RegistryObject(ResourceLocation id,T value){this.id=id;this.value=value;}
+        public T get(){return value;} public ResourceLocation getId(){return id;}
     }
     public static class IForgeRegistry<T> {
         final Registry<T> registry; IForgeRegistry(Registry<T> r){registry=r;}
@@ -144,17 +144,17 @@ public final class ForgeCompat {
     public static class DeferredRegister<T> {
         final IForgeRegistry<T> registry; final String modid;
         DeferredRegister(IForgeRegistry<T> r,String id){registry=r;modid=id;}
-        public static <T> DeferredRegister<T> create(IForgeRegistry<T> r,String id){return new DeferredRegister<>(r,id);}
-        public RegistryObject<T> register(String name,Supplier<? extends T> sup){T v=Registry.register(registry.registry,new ResourceLocation(modid,name),sup.get());return new RegistryObject<>(name,v);}
+        public static <T> DeferredRegister<T> create(IForgeRegistry<T> r,String id){return new DeferredRegister<>(r,id);} @SuppressWarnings({"unchecked","rawtypes"}) public static <T> DeferredRegister<T> create(net.minecraft.resources.ResourceKey key,String id){ if(key==net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB) return new DeferredRegister(new IForgeRegistry(BuiltInRegistries.CREATIVE_MODE_TAB),id); throw new IllegalArgumentException(key.toString()); }
+        public <U extends T> RegistryObject<U> register(String name,Supplier<? extends U> sup){U v=Registry.register(registry.registry,new ResourceLocation(modid,name),sup.get());return new RegistryObject<>(new ResourceLocation(modid,name),v);}
         public void register(IEventBus bus){}
     }
 
     public static final class IForgeMenuType {
         public interface Factory<T>{T create(int id,Inventory inv,FriendlyByteBuf buf);}
-        public static <T extends AbstractContainerMenu> MenuType<T> create(Factory<T> f){return new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>((id,inv,buf)->f.create(id,inv,buf),net.minecraft.world.flag.FeatureFlags.VANILLA_SET);}
+        public static <T extends AbstractContainerMenu> MenuType<T> create(Factory<T> f){return new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>((id,inv,buf)->f.create(id,inv,buf));}
     }
 
-    public static final class NetworkHooks { public static void openScreen(ServerPlayer p,MenuProvider provider){p.openMenu(provider);} }
+    public static final class NetworkHooks { public static void openScreen(ServerPlayer p,MenuProvider provider){p.openMenu(provider);} public static void openScreen(ServerPlayer p,MenuProvider provider,BlockPos pos){p.openMenu(provider);} }
     public static final class NetworkRegistry { public static SimpleChannel newSimpleChannel(ResourceLocation id,Supplier<String> p,Predicate<String> c,Predicate<String> s){return new SimpleChannel();} }
     public static class SimpleChannel { public <T> void registerMessage(int id,Class<T> t,BiConsumer<T,FriendlyByteBuf> e,Function<FriendlyByteBuf,T>d,BiConsumer<T,Supplier<NetworkEvent.Context>>h){} }
     public static final class NetworkEvent {
