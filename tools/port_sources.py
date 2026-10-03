@@ -139,6 +139,14 @@ for p in src.rglob("*.java"):
     text=text.replace("@Nullable ","")
     for obj in ["_ent","itemstack","this.boundItem","this.boundEntity","this.boundBlockEntity"]:
         text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, null)","ForgeCompat.getItemHandler("+obj+")")
+        text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, (Direction)null)","ForgeCompat.getItemHandler("+obj+")")
+    text=text.replace("Map _slots", "Map<Integer, Slot> _slots")
+    text=text.replace("Supplier _current", "Supplier<Map<Integer, Slot>> _current")
+    text=text.replace('guistate.get("text:Weight").getValue()', '((EditBox)guistate.get("text:Weight")).getValue()')
+    text=text.replace("ItemTags.create(new ResourceLocation(", "TagKey.create(Registries.ITEM, new ResourceLocation(")
+    if "TagKey.create(Registries.ITEM" in text:
+        text=text.replace("import net.minecraft.tags.ItemTags;", "import net.minecraft.tags.TagKey;\nimport net.minecraft.core.registries.Registries;")
+    text=text.replace("CreativeModeTab.builder()", "CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0)")
     text=re.sub(r"public <T> LazyOptional<T> getCapability\(Capability<T> capability, @Nullable Direction facing\) \{.*?\n    \}","public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) { return LazyOptional.empty(); }",text,flags=re.S)
     if "ForgeCompat.getItemHandler" in text:
         text="import net.mcreator.educationeditionreforged.compat.ForgeCompat;\n"+text
