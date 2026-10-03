@@ -156,7 +156,7 @@ public final class ForgeCompat {
 
     public static final class NetworkHooks { public static void openScreen(ServerPlayer p,MenuProvider provider){p.openMenu(provider);} public static void openScreen(ServerPlayer p,MenuProvider provider,BlockPos pos){p.openMenu(provider);} }
     public static final class NetworkRegistry { public static SimpleChannel newSimpleChannel(ResourceLocation id,Supplier<String> p,Predicate<String> c,Predicate<String> s){return new SimpleChannel();} }
-    public static class SimpleChannel { public <T> void registerMessage(int id,Class<T> t,BiConsumer<T,FriendlyByteBuf> e,Function<FriendlyByteBuf,T>d,BiConsumer<T,Supplier<NetworkEvent.Context>>h){} }
+    public static class SimpleChannel { public void sendToServer(Object message) {} public <T> void registerMessage(int id,Class<T> t,BiConsumer<T,FriendlyByteBuf> e,Function<FriendlyByteBuf,T>d,BiConsumer<T,Supplier<NetworkEvent.Context>>h){} }
     public static final class NetworkEvent {
         public static class Context { private final ServerPlayer sender; public Context(){this(null);} public Context(ServerPlayer s){sender=s;} public void enqueueWork(Runnable r){r.run();} public ServerPlayer getSender(){return sender;} public void setPacketHandled(boolean b){} }
     }
