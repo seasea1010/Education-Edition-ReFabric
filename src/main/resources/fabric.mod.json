@@ -6,6 +6,7 @@
   "description": "Fabric port of Education Edition Reforged.",
   "authors": ["seasea1010"],
   "environment": "*",
-  "entrypoints": {"main": ["com.seasea1010.education_edition_refabric.EducationEditionReFabric"]},
+  "entrypoints": {"main": ["com.seasea1010.education_edition_refabric.EducationEditionReFabric"],
+    "client": ["com.seasea1010.education_edition_refabric.EducationEditionReFabricClient"]},
   "depends": {"fabricloader": ">=0.14.0", "minecraft": "~1.20.1", "java": ">=17", "fabric-api": "*"}
 }
