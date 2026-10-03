@@ -149,7 +149,7 @@ for p in src.rglob("*.java"):
     text=text.replace("CreativeModeTab.builder()", "CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0)")
     text=re.sub(r"public <T> LazyOptional<T> getCapability\(Capability<T> capability, @Nullable Direction facing\) \{.*?\n    \}","public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) { return LazyOptional.empty(); }",text,flags=re.S)
     if "ForgeCompat.getItemHandler" in text:
-        text="import net.mcreator.educationeditionreforged.compat.ForgeCompat;\n"+text
+        text=re.sub(r"^(package [^;]+;\n)", r"\1import net.mcreator.educationeditionreforged.compat.ForgeCompat;\n", text, count=1)
     # Rebuild MCreator Combine procedures from their recipe conditions.
     if rel.name.startswith("Combine") and rel.name.endswith("Procedure.java"):
         if rel.name == "CombineProcedure.java":
