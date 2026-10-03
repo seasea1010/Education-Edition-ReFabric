@@ -153,6 +153,7 @@ for p in src.rglob("*.java"):
     text=text.replace("addWidget((GuiEventListener)", "addWidget(")
     text=text.replace("NonNullList.withSize(10, (Object)ItemStack.EMPTY)", "NonNullList.withSize(10, ItemStack.EMPTY)")
     text=text.replace("NonNullList.withSize(this.getContainerSize(), (Object)ItemStack.EMPTY)", "NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY)")
+    text=re.sub(r"NonNullList\.withSize\((\d+), \(Object\)ItemStack\.EMPTY\)", r"NonNullList.withSize(\1, ItemStack.EMPTY)", text)
     text=text.replace("return (LazyOptional<T>)super.getCapability((Capability)capability, facing);", "return LazyOptional.empty();")
     text=text.replace("super.onDestroyedByPlayer(blockstate, world, pos, entity, willHarvest, fluid)", "world.removeBlock(pos, false)")
     text=text.replace("() -> new BlockItem((Block)block.get(), new Item.Properties())", "() -> (Item)new BlockItem((Block)block.get(), new Item.Properties())")
@@ -209,7 +210,7 @@ public class {0} {{
 """.format(rel.stem, "\n".join(checks), "\n".join(consume), output)
 
     if "/client/gui/" in str(rel) and rel.name.endswith("Screen.java"):
-        menu_name=rel.stem[:-6] if rel.stem.endswith("Screen") else rel.stem
+        menu_name=(rel.stem[:-6] if rel.stem.endswith("Screen") else rel.stem)+"Menu"
         text=text.replace("super((AbstractContainerMenu)container,", "super(("+menu_name+")container,")
     target=out/rel
     target.parent.mkdir(parents=True,exist_ok=True)
