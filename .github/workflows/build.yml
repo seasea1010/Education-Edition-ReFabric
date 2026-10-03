@@ -39,7 +39,10 @@ jobs:
             https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
           curl -L --fail -o tools/mapping-io.jar \
             https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
-          unzip -p tools/yarn.jar mappings/mappings.tiny > tools/mappings.tiny
+          curl -L --fail -o tools/intermediary.jar \
+            https://maven.fabricmc.net/net/fabricmc/intermediary/1.20.1/intermediary-1.20.1-v2.jar
+          unzip -p tools/intermediary.jar mappings/mappings.tiny > tools/official-intermediary.tiny
+          unzip -p tools/yarn.jar mappings/mappings.tiny > tools/intermediary-named.tiny
           cat > tools/Remap.java <<'EOF'
           import net.fabricmc.tinyremapper.*;
           import net.fabricmc.mappingio.MappingReader;
@@ -70,7 +73,11 @@ jobs:
         run: |
           java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
-            tools/mappings.tiny \
+            tools/official-intermediary.tiny \
+            original-mod/education_edition_reforged-1.0.4-intermediary.jar
+          java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
+            original-mod/education_edition_reforged-1.0.4-intermediary.jar \
+            tools/intermediary-named.tiny \
             original-mod/education_edition_reforged-1.0.4-named.jar
 
       - name: Decompile remapped mod
