@@ -42,10 +42,11 @@ jobs:
           curl -L --fail -o tools/client.txt "$(cat tools/client_url.txt)"
           curl -L --fail -o tools/tiny-remapper.jar https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
           curl -L --fail -o tools/mapping-io.jar https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
+          curl -L --fail -o tools/mapping-io-extras.jar https://repo1.maven.org/maven2/net/fabricmc/mapping-io-extras/0.8.0/mapping-io-extras-0.8.0.jar
           cat > tools/Remap.java <<'EOF'
           import net.fabricmc.tinyremapper.*;
           import net.fabricmc.mappingio.MappingReader;
-          import net.fabricmc.mappingio.MappingFormat;
+          import net.fabricmc.mappingio.format.MappingFormat;
           import net.fabricmc.mappingio.tree.MemoryMappingTree;
           import java.nio.file.*;
           public class Remap {
@@ -71,11 +72,11 @@ jobs:
             }
           }
           EOF
-          javac -cp tools/tiny-remapper.jar:tools/mapping-io.jar tools/Remap.java
+          javac -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools/mapping-io-extras.jar tools/Remap.java
 
       - name: Remap Forge mod to Mojang names
         run: |
-          java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
+          java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools/mapping-io-extras.jar:tools Remap \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
             tools/client.txt tools/server.txt \
             original-mod/education_edition_reforged-1.0.4-mojmap.jar
