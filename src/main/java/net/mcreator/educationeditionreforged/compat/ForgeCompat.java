@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.state.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraftforge_placeholder.Nothing;
 
 public final class ForgeCompat {
     private ForgeCompat() {}
@@ -29,7 +28,7 @@ public final class ForgeCompat {
 
     public enum Dist { CLIENT, DEDICATED_SERVER }
     public enum Phase { START, END }
-    public static class ServerTickEvent { public final Phase phase; public ServerTickEvent(){this.phase=Phase.END;} public ServerTickEvent(Phase p){phase=p;} }
+    public static final class TickEvent { public enum Phase { START, END } public static class ServerTickEvent { public final Phase phase; public ServerTickEvent(){this.phase=Phase.END;} public ServerTickEvent(Phase p){phase=p;} } }
 
     public static class FMLCommonSetupEvent { public void enqueueWork(Runnable r){r.run();} }
     public static class FMLClientSetupEvent { public void enqueueWork(Runnable r){r.run();} }
@@ -133,7 +132,7 @@ public final class ForgeCompat {
     }
     public static class IForgeRegistry<T> {
         final Registry<T> registry; IForgeRegistry(Registry<T> r){registry=r;}
-        public T getValue(ResourceLocation id){return registry.get(id);} public ResourceLocation getKey(T value){return registry.getKey(value);}
+        public T getValue(ResourceLocation id){return registry.get(id);} public ResourceLocation getKey(T value){return registry.getKey(value);} public ResourceLocation getKey(Object value){return registry.getKey((T)value);}
     }
     public static final class ForgeRegistries {
         public static final IForgeRegistry<Item> ITEMS=new IForgeRegistry<>(BuiltInRegistries.ITEM);
@@ -162,7 +161,7 @@ public final class ForgeCompat {
         public static class Context { private final ServerPlayer sender; public Context(){this(null);} public Context(ServerPlayer s){sender=s;} public void enqueueWork(Runnable r){r.run();} public ServerPlayer getSender(){return sender;} public void setPacketHandled(boolean b){} }
     }
 
-    public static final class Mod { public @interface Annotation {String value() default "";} }
+    public static final class Mod {}
     public static final class ModList { public static ModList get(){return new ModList();} public boolean isLoaded(String id){return false;} }
 
     public static final class BrewingRecipeRegistry { public static void addRecipe(IBrewingRecipe r){} }
