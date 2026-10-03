@@ -110,6 +110,48 @@ jobs:
             src/main/java \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar
 
+      - name: Install Fabric entrypoints
+        run: |
+          mkdir -p src/main/java/com/seasea1010/education_edition_refabric
+          cat > src/main/java/com/seasea1010/education_edition_refabric/EducationEditionReFabric.java <<'EOF'
+          package com.seasea1010.education_edition_refabric;
+
+          import net.fabricmc.api.ModInitializer;
+          import net.mcreator.educationeditionreforged.EducationEditionReforgedMod;
+          import net.mcreator.educationeditionreforged.compat.ForgeCompat.FMLCommonSetupEvent;
+          import net.mcreator.educationeditionreforged.network.CompoundCreatorGUIButtonMessage;
+          import net.mcreator.educationeditionreforged.network.CompoundsPage1ButtonMessage;
+          import net.mcreator.educationeditionreforged.network.CompoundsPage2ButtonMessage;
+
+          public final class EducationEditionReFabric implements ModInitializer {
+              public static final String MOD_ID = "education_edition_reforged";
+
+              @Override
+              public void onInitialize() {
+                  new EducationEditionReforgedMod();
+                  FMLCommonSetupEvent setup = new FMLCommonSetupEvent();
+                  CompoundCreatorGUIButtonMessage.registerMessage(setup);
+                  CompoundsPage1ButtonMessage.registerMessage(setup);
+                  CompoundsPage2ButtonMessage.registerMessage(setup);
+                  System.out.println("[Education Edition ReFabric] Initialized.");
+              }
+          }
+          EOF
+          cat > src/main/java/com/seasea1010/education_edition_refabric/EducationEditionReFabricClient.java <<'EOF'
+          package com.seasea1010.education_edition_refabric;
+
+          import net.fabricmc.api.ClientModInitializer;
+          import net.mcreator.educationeditionreforged.compat.ForgeCompat.FMLClientSetupEvent;
+          import net.mcreator.educationeditionreforged.init.EducationEditionReforgedModScreens;
+
+          public final class EducationEditionReFabricClient implements ClientModInitializer {
+              @Override
+              public void onInitializeClient() {
+                  EducationEditionReforgedModScreens.clientLoad(new FMLClientSetupEvent());
+              }
+          }
+          EOF
+
       - name: Build Fabric project
         run: gradle build
 
