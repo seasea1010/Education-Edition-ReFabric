@@ -135,6 +135,8 @@ for p in src.rglob("*.java"):
     text="\n".join(lines)+"\n"
     text=re.sub(r"^\s*@Mod(?:\.[A-Za-z0-9_]+)?(?:\([^\n]*\))?\s*$","",text,flags=re.M)
     text=re.sub(r"^\s*@SubscribeEvent\s*$","",text,flags=re.M)
+    text=text.replace("import javax.annotation.Nullable;","")
+    text=text.replace("@Nullable ","")
     for obj in ["_ent","itemstack","this.boundItem","this.boundEntity","this.boundBlockEntity"]:
         text=text.replace(obj+".getCapability(ForgeCapabilities.ITEM_HANDLER, null)","ForgeCompat.getItemHandler("+obj+")")
     text=re.sub(r"public <T> LazyOptional<T> getCapability\(Capability<T> capability, @Nullable Direction facing\) \{.*?\n    \}","public <T> LazyOptional<T> getCapability(Capability<T> capability, @Nullable Direction facing) { return LazyOptional.empty(); }",text,flags=re.S)
