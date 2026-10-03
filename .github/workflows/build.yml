@@ -37,15 +37,21 @@ jobs:
             https://maven.fabricmc.net/net/fabricmc/yarn/1.20.1%2Bbuild.10/yarn-1.20.1%2Bbuild.10-v2.jar
           curl -L --fail -o tools/tiny-remapper.jar \
             https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
+          curl -L --fail -o tools/mapping-io.jar \
+            https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
           unzip -p tools/yarn.jar mappings/mappings.tiny > tools/mappings.tiny
           cat > tools/Remap.java <<'EOF'
           import net.fabricmc.tinyremapper.*;
+          import net.fabricmc.mappingio.MappingReader;
+          import net.fabricmc.mappingio.tree.MemoryMappingTree;
           import java.nio.file.*;
           public class Remap {
             public static void main(String[] args) throws Exception {
               Path input=Paths.get(args[0]), mappings=Paths.get(args[1]), output=Paths.get(args[2]);
+              MemoryMappingTree tree=new MemoryMappingTree();
+              MappingReader.read(mappings, tree);
               TinyRemapper remapper=TinyRemapper.newRemapper()
-                .withMappings(TinyUtils.createMappingProvider(mappings, "official", "named"))
+                .withMappings(TinyUtils.createMappingProvider(tree, "official", "named"))
                 .rebuildSourceFilenames(true).build();
               OutputConsumerPath consumer=new OutputConsumerPath.Builder(output).build();
               try {
@@ -58,11 +64,11 @@ jobs:
             }
           }
           EOF
-          javac -cp tools/tiny-remapper.jar tools/Remap.java
+          javac -cp tools/tiny-remapper.jar:tools/mapping-io.jar tools/Remap.java
 
       - name: Remap Forge mod from official names to Yarn names
         run: |
-          java -cp tools/tiny-remapper.jar:tools Remap \
+          java -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools Remap \
             original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
             tools/mappings.tiny \
             original-mod/education_edition_reforged-1.0.4-named.jar
