@@ -84,7 +84,7 @@ jobs:
         run: |
           rm -rf decompiled
           mkdir -p decompiled
-          java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-named.jar \
+          java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-mojmap.jar \
             --outputdir decompiled --silent true --comments false
 
       - name: Build Fabric project
