@@ -31,9 +31,47 @@ jobs:
           curl -L --fail -o tools/cfr.jar \
             https://repo1.maven.org/maven2/org/benf/cfr/0.152/cfr-0.152.jar
 
-      - name: Decompile original Forge mod
+      - name: Download Fabric mappings and remapper
         run: |
-          java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
+          curl -L --fail -o tools/yarn.jar \
+            https://maven.fabricmc.net/net/fabricmc/yarn/1.20.1%2Bbuild.10/yarn-1.20.1%2Bbuild.10-v2.jar
+          curl -L --fail -o tools/tiny-remapper.jar \
+            https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
+          unzip -p tools/yarn.jar mappings/mappings.tiny > tools/mappings.tiny
+          cat > tools/Remap.java <<'EOF'
+          import net.fabricmc.tinyremapper.*;
+          import java.nio.file.*;
+          public class Remap {
+            public static void main(String[] args) throws Exception {
+              Path input=Paths.get(args[0]), mappings=Paths.get(args[1]), output=Paths.get(args[2]);
+              TinyRemapper remapper=TinyRemapper.newRemapper()
+                .withMappings(TinyUtils.createMappingProvider(mappings, "official", "named"))
+                .rebuildSourceFilenames(true).build();
+              OutputConsumerPath consumer=new OutputConsumerPath.Builder(output).build();
+              try {
+                remapper.readInputs(input);
+                remapper.apply(consumer);
+              } finally {
+                consumer.close();
+                remapper.finish();
+              }
+            }
+          }
+          EOF
+          javac -cp tools/tiny-remapper.jar tools/Remap.java
+
+      - name: Remap Forge mod from official names to Yarn names
+        run: |
+          java -cp tools/tiny-remapper.jar:tools Remap \
+            original-mod/education_edition_reforged-1.0.4-forge-1.20.1.jar \
+            tools/mappings.tiny \
+            original-mod/education_edition_reforged-1.0.4-named.jar
+
+      - name: Decompile remapped mod
+        run: |
+          rm -rf decompiled
+          mkdir -p decompiled
+          java -Xmx2G -jar tools/cfr.jar original-mod/education_edition_reforged-1.0.4-named.jar \
             --outputdir decompiled --silent true --comments false
 
       - name: Build Fabric project
