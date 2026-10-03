@@ -43,6 +43,8 @@ jobs:
           curl -L --fail -o tools/tiny-remapper.jar https://maven.fabricmc.net/net/fabricmc/tiny-remapper/0.14.1/tiny-remapper-0.14.1-fat.jar
           curl -L --fail -o tools/mapping-io.jar https://repo1.maven.org/maven2/net/fabricmc/mapping-io/0.8.0/mapping-io-0.8.0.jar
           curl -L --fail -o tools/mapping-io-extras.jar https://repo1.maven.org/maven2/net/fabricmc/mapping-io-extras/0.8.0/mapping-io-extras-0.8.0.jar
+          curl -L --fail -o tools/mcp_config.zip https://maven.neoforged.net/releases/de/oceanlabs/mcp/mcp_config/1.20.1-20230612.114412/mcp_config-1.20.1-20230612.114412.zip
+          unzip -p tools/mcp_config.zip config/joined.tsrg > tools/joined.tsrg
           cat > tools/Remap.java <<'EOF'
           import net.fabricmc.tinyremapper.*;
           import net.fabricmc.mappingio.MappingReader;
@@ -73,6 +75,15 @@ jobs:
           }
           EOF
           javac -cp tools/tiny-remapper.jar:tools/mapping-io.jar:tools/mapping-io-extras.jar tools/Remap.java
+
+      - name: Upload mapping inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapping-inputs
+          path: |
+            tools/joined.tsrg
+            tools/client.txt
+            tools/server.txt
 
       - name: Remap Forge mod to Mojang names
         run: |
