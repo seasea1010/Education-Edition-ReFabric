@@ -28,7 +28,7 @@ public final class ForgeCompat {
 
     public enum Dist { CLIENT, DEDICATED_SERVER }
     public enum Phase { START, END }
-    public static final class TickEvent { public enum Phase { START, END } public static class ServerTickEvent { public final Phase phase; public ServerTickEvent(){this.phase=Phase.END;} public ServerTickEvent(Phase p){phase=p;} } }
+    public static final class TickEvent { public enum Phase { START, END } public static class ServerTickEvent { public final Phase phase; public ServerTickEvent(){this.phase=Phase.END;} public ServerTickEvent(Phase p){phase=p;} } public static class PlayerTickEvent { public final Phase phase; public final Player player; public PlayerTickEvent(Player p, Phase ph){player=p;phase=ph;} } }
 
     public static class FMLCommonSetupEvent { public void enqueueWork(Runnable r){r.run();} }
     public static class FMLClientSetupEvent { public void enqueueWork(Runnable r){r.run();} }
@@ -132,7 +132,7 @@ public final class ForgeCompat {
     }
     public static class IForgeRegistry<T> {
         final Registry<T> registry; IForgeRegistry(Registry<T> r){registry=r;}
-        public T getValue(ResourceLocation id){return registry.get(id);} public ResourceLocation getKey(T value){return registry.getKey(value);} public ResourceLocation getKey(Object value){return registry.getKey((T)value);}
+        public T getValue(ResourceLocation id){return registry.get(id);} @SuppressWarnings("unchecked") public ResourceLocation getKey(Object value){return registry.getKey((T)value);}
     }
     public static final class ForgeRegistries {
         public static final IForgeRegistry<Item> ITEMS=new IForgeRegistry<>(BuiltInRegistries.ITEM);
@@ -151,7 +151,7 @@ public final class ForgeCompat {
 
     public static final class IForgeMenuType {
         public interface Factory<T>{T create(int id,Inventory inv,FriendlyByteBuf buf);}
-        public static <T extends AbstractContainerMenu> MenuType<T> create(Factory<T> f){return new MenuType<>((id,inv,buf)->f.create(id,inv,buf),net.minecraft.world.flag.FeatureFlags.VANILLA_SET);}
+        public static <T extends AbstractContainerMenu> MenuType<T> create(Factory<T> f){return new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType<>((id,inv,buf)->f.create(id,inv,buf),net.minecraft.world.flag.FeatureFlags.VANILLA_SET);}
     }
 
     public static final class NetworkHooks { public static void openScreen(ServerPlayer p,MenuProvider provider){p.openMenu(provider);} }
@@ -162,8 +162,7 @@ public final class ForgeCompat {
     }
 
     public static final class Mod {}
-    public static final class ModList { public static ModList get(){return new ModList();} public boolean isLoaded(String id){return false;} }
-
+    
     public static final class BrewingRecipeRegistry { public static void addRecipe(IBrewingRecipe r){} }
     public interface IBrewingRecipe { boolean isInput(ItemStack s); boolean isIngredient(ItemStack s); ItemStack getOutput(ItemStack in,ItemStack ing); }
 
